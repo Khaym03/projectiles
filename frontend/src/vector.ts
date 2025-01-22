@@ -90,4 +90,8 @@ export class Vector {
     const y = b.y - a.y
     return Math.atan2(y, x)
   }
+
+  equals(other: Vector): boolean {
+    return this.x === other.x && this.y === other.y
+  }
 }

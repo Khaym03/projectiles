@@ -11,4 +11,4 @@ export const FPS = 60
 
 export const METER_PER_SECOND = PIXELS_PER_METER / FPS // m/s
 
-export const EARTH_GRAVITY = Object.freeze(new Vector(0, 9.81 / FPS)) // m/s^2
+export const EARTH_GRAVITY = Object.freeze(new Vector(0, 9.81 * 2 / FPS)) // m/s^2

@@ -8,7 +8,7 @@ export default class Blaster {
     private color = '#fff'; // Color del Blaster
     private isColliding = false; // Estado de colisión
 
-    private easingFactor = 0.175; // Factor de easing
+    private easingFactor = 0.015; // Factor de easing
 
     private audio: HTMLAudioElement
 

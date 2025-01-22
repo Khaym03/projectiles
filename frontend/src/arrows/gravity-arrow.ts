@@ -11,15 +11,19 @@ export class GravityArrow {
   draw(origin: Vector, gravity: Vector) {
     // Calcular la longitud de la flecha en función de la magnitud de la gravedad
     const gravityMagnitude = gravity.magnitude();
+    const arrowLength = this.baseArrowLength * (gravityMagnitude * 8); // Ajusta el divisor según sea necesario
 
-    const arrowLength = this.baseArrowLength * (gravityMagnitude *8); // Ajusta el divisor según sea necesario
+    // Normalizar el vector de gravedad para obtener la dirección
+    const gravityDirection = gravity.normalize();
 
-    // Definir un punto de origen para la flecha (puedes ajustar esto según tus necesidades)
-   // Punto de origen fijo para el ejemplo
-    const endPoint = new Vector(origin.x, origin.y + arrowLength); // Apunta hacia abajo
+    // Calcular el punto final de la flecha
+    const endPoint = new Vector(
+      origin.x + gravityDirection.x * arrowLength,
+      origin.y + gravityDirection.y * arrowLength
+    );
 
     this.body(origin, endPoint);
-    this.head(endPoint);
+    this.head(endPoint, gravityDirection);
   }
 
   private body(origin: Vector, endPoint: Vector) {
@@ -32,12 +36,15 @@ export class GravityArrow {
     this.ctx.stroke();
   }
 
-  private head(endPoint: Vector) {
-    const headPoint1X = endPoint.x - this.arrowHeadLength / 2;
-    const headPoint1Y = endPoint.y - this.arrowHeadLength;
+  private head(endPoint: Vector, direction: Vector) {
+    // Calcular los puntos para las cabezas de la flecha
+    const angle = Math.atan2(direction.y, direction.x); // Ángulo de dirección
 
-    const headPoint2X = endPoint.x + this.arrowHeadLength / 2;
-    const headPoint2Y = endPoint.y - this.arrowHeadLength;
+    const headPoint1X = endPoint.x - this.arrowHeadLength * Math.cos(angle - Math.PI / 6);
+    const headPoint1Y = endPoint.y - this.arrowHeadLength * Math.sin(angle - Math.PI / 6);
+
+    const headPoint2X = endPoint.x - this.arrowHeadLength * Math.cos(angle + Math.PI / 6);
+    const headPoint2Y = endPoint.y - this.arrowHeadLength * Math.sin(angle + Math.PI / 6);
 
     // Dibujar las cabezas de la flecha
     this.ctx.beginPath();

@@ -13,6 +13,10 @@ export class GravityForce {
         return this.gravity
     }
 
+    setGravity(gravity: Vector) {
+        this.gravity = gravity
+    }
+
     setGravityMagnitude(magnitude: number) {
         this.gravity = new Vector(0, magnitude / FPS)
     }

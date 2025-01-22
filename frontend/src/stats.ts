@@ -2,6 +2,7 @@ import { Circle } from './circle'
 import { Entity } from './types'
 import { Launcher } from './launcher'
 import { Vector } from './vector'
+import Config from './config'
 
 export class Stats implements Entity {
   private rem = 16
@@ -11,7 +12,7 @@ export class Stats implements Entity {
   public position: Vector = new Vector(0, 0)
   
 
-  constructor(ctx: CanvasRenderingContext2D) {
+  constructor(ctx: CanvasRenderingContext2D, private config: Config) {
     this.ctx = ctx
   }
 
@@ -26,7 +27,7 @@ export class Stats implements Entity {
   update(): void {}
 
   draw() {
-    if (!this.proyectile || !this.launcer) return
+    if (!this.proyectile || this.config.gameMode === 'game' || !this.launcer) return
 
     // Configurar estilo de texto
     this.ctx.fillStyle = 'white'

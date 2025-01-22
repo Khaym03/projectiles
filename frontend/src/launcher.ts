@@ -2,21 +2,32 @@ import { Vector } from './vector'
 import { Circle } from './circle'
 import { Mouse } from './mouse'
 import { FOOTBALL, METER_PER_SECOND, PIXELS_PER_METER } from './constants'
+import Config from './config'
 
 export class Launcher {
   private angle = (45 * Math.PI) / 180
   private tubeLength = 100
-  public position = new Vector(0,0)
+  public position = new Vector(0, 0)
 
   private numOfProjectiles = 1
 
-  constructor(private ctx: CanvasRenderingContext2D,private mouse: Mouse, private power: number) {
+  constructor(
+    private ctx: CanvasRenderingContext2D,
+    private mouse: Mouse,
+    private power: number,
+    private config: Config
+  ) {
     this.initializeControls()
   }
 
   draw() {
-    // TODO: ver como arreglar esta parte
-   const  position = new Vector(1, innerHeight)
+    let position: Vector
+
+    if (this.config.gameMode === 'game') {
+      position = new Vector(-1000, innerHeight + 1000)
+    } else {
+      position = new Vector(0, innerHeight)
+    }
 
     const x = position.x + this.tubeLength * Math.cos(this.angle)
     const y = position.y - this.tubeLength * Math.sin(this.angle)
@@ -50,7 +61,7 @@ export class Launcher {
     const forceOfFire = Vector.fromPolar(
       acceleration * METER_PER_SECOND,
       this.angle
-    ) 
+    )
 
     projectile.velocity = projectile.velocity.add(forceOfFire)
 

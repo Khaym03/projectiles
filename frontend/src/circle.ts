@@ -10,9 +10,9 @@ export class Circle implements Entity {
   public gravity = EARTH_GRAVITY
   public friction = new Friction(0.8)
   public airResistance = new AirResistance()
-  public collisionHandler = new CollisionHandler(this)
   public velocityColor = 'green'
   public color = 'hsl(217.2 91.2% 59.8%)'
+  public collisionHandler = new CollisionHandler()
 
   constructor(
     public ctx: CanvasRenderingContext2D,
@@ -53,11 +53,11 @@ export class Circle implements Entity {
     this.position = this.position.add(this.velocity)
 
     // Verificar colisiones con los límites
-    this.handleHitXBoundary()
+    // this.handleHitXBoundary()
 
-    this.collisionHandler.checkGroundCollision()
+    // this.collisionHandler.checkGroundCollision()
 
-    if (this.collisionHandler.isInGround()) {
+    if (this.collisionHandler.isInGround(this)) {
       this.friction.apply(this)
     }
   }
@@ -144,13 +144,13 @@ export class Circle implements Entity {
     }
   }
 
-  private handleHitXBoundary() {
-    if (this.position.x + this.radius > innerWidth) {
-      this.position.x = innerWidth - this.radius // Ajustar posición
-      this.velocity.x = -this.velocity.x // Invertir velocidad
-    } else if (this.position.x - this.radius < 0) {
-      this.position.x = this.radius // Ajustar posición
-      this.velocity.x = -this.velocity.x // Invertir velocidad
-    }
-  }
+  // private handleHitXBoundary() {
+  //   if (this.position.x + this.radius > innerWidth) {
+  //     this.position.x = innerWidth - this.radius // Ajustar posición
+  //     this.velocity.x = -this.velocity.x // Invertir velocidad
+  //   } else if (this.position.x - this.radius < 0) {
+  //     this.position.x = this.radius // Ajustar posición
+  //     this.velocity.x = -this.velocity.x // Invertir velocidad
+  //   }
+  // }
 }

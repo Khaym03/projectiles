@@ -9,10 +9,13 @@ import { Vector } from './vector'
 import { Stats } from './stats'
 import { FOOTBALL, METER_PER_SECOND, PIXELS_PER_METER } from './constants'
 import { Launcher } from './launcher'
-import { Switch } from '@/components/ui/switch'
-import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
 import Blaster from './blaster'
-import UnoMusic from './assets/uno.mp3'
+import MainMusic from './assets/theatore.mp3'
+
+import { WindowMaximise } from '../wailsjs/runtime'
+import SwitchesList, { switchOption } from './components/swithces-list'
+import Config, { gameConfig, physicsSimulationConfig } from './config'
 
 class AppController {
   public ctx: CanvasRenderingContext2D
@@ -21,15 +24,19 @@ class AppController {
   public scene: Scene
   public mouse: Mouse
 
-  public panelStats: Stats
+  public panelStats: Stats | undefined
 
   // public proyectile: Circle
   private proyectiles: Circle[] = []
   private blasters: Blaster[] = []
 
-  public launcher: Launcher
+  public launcher: Launcher | undefined
 
-  constructor(public canvas: HTMLCanvasElement) {
+  public music: HTMLAudioElement = new Audio(MainMusic)
+
+  constructor(public canvas: HTMLCanvasElement, public config: Config) {
+    if (config.playMusic) this.music.play()
+
     this.ctx = this.canvas.getContext('2d')!
     this.canvas.width = window.innerWidth
     this.canvas.height = window.innerHeight
@@ -38,12 +45,14 @@ class AppController {
       this.ctx,
       this.entities,
       this.proyectiles,
-      this.blasters
+      this.blasters,
+      this.config
     )
 
     this.mouse = new Mouse(this.ctx)
 
-    this.panelStats = new Stats(this.ctx)
+    if (this.config.showStats)
+      this.panelStats = new Stats(this.ctx, this.config)
 
     this.proyectiles.push(
       new Circle(
@@ -51,35 +60,39 @@ class AppController {
         this.mouse,
         new Vector(10, 10).scale(PIXELS_PER_METER),
         new Vector(5, 0).scale(METER_PER_SECOND),
-        FOOTBALL.radius,
+        25,
         FOOTBALL.mass
       )
     )
 
-    this.launcher = new Launcher(this.ctx, this.mouse, 20) // Newtons
-    this.panelStats.setLauncher(this.launcher)
-    this.panelStats.setProjectile(this.proyectiles[0])
+    if (this.config.showStats) {
+      this.launcher = new Launcher(this.ctx, this.mouse, 20, this.config)
+      this.panelStats.setLauncher(this.launcher)
+      this.panelStats.setProjectile(this.proyectiles[0])
+      this.entities.push(this.panelStats)
+      this.entities.push(this.launcher)
+    }
 
     // this.entities.push(this.proyectile)
-    this.entities.push(this.panelStats)
-    this.entities.push(this.launcher)
 
     this.setup()
     this.scene.render(Date.now())
   }
 
   setup() {
-    setInterval(() => {
-      this.blasters.pop()
-      this.blasters.push(
-        new Blaster(
-          this.ctx,
-          new Vector(Math.random() * innerWidth, Math.random() * innerHeight),
-          this.proyectiles[0].position
-          // (45 / 180) * Math.PI
+    if (this.config.allowBlasters) {
+      setInterval(() => {
+        this.blasters.pop()
+        this.blasters.push(
+          new Blaster(
+            this.ctx,
+            new Vector(Math.random() * innerWidth, Math.random() * innerHeight),
+            this.proyectiles[0].position
+            // (45 / 180) * Math.PI
+          )
         )
-      )
-    }, 1000)
+      }, 1000)
+    }
 
     addEventListener('resize', () => {
       this.canvas.width = window.innerWidth
@@ -90,8 +103,11 @@ class AppController {
       switch (event.key) {
         case ' ': // Espacio para disparar
           {
-            const projectile = this.launcher.fire()
-            this.proyectiles.push(projectile)
+            // solucion temporal para el bug de la sombra en el fondo
+            if (this.launcher && this.config.gameMode !== 'game') {
+              const projectile = this.launcher.fire()
+              this.proyectiles.push(projectile)
+            }
           }
           break
         case 'r':
@@ -99,6 +115,15 @@ class AppController {
             location.reload()
           }
           break
+        case 'f': {
+          // this.fullScreen = !this.fullScreen
+          // if (this.fullScreen) {
+          //   WindowUnfullscreen()
+          // } else {
+          //   WindowFullscreen()
+          // }
+          WindowMaximise()
+        }
       }
     })
 
@@ -122,64 +147,90 @@ class AppController {
 function App() {
   const ref = useRef<HTMLCanvasElement>(null)
   const appRef = useRef<AppController | null>(null)
+  const [config, setConfig] = useState<Config>(physicsSimulationConfig)
   const [playing, setPlaying] = useState(false)
 
-  const [showGravityArrow, setShowGravityArrow] = useState(true)
-  const [showVelocityArrow, setShowVelocityArrow] = useState(true)
+  // const [showGravityArrow, setShowGravityArrow] = useState(true)
+  // const [showVelocityArrow, setShowVelocityArrow] = useState(true)
+
+  const switches: switchOption[] = [
+    // {
+    //   label: 'Mostrar Vector de Gravedad',
+    //   checked: showGravityArrow,
+    //   handler: (v: boolean) => setShowGravityArrow(v)
+    // },
+    // {
+    //   label: 'Mostrar Vector de Velocidad',
+    //   checked: showVelocityArrow,
+    //   handler: (v: boolean) => setShowVelocityArrow(v)
+    // }
+  ]
+
+  // useEffect(() => {
+  //   if (!appRef.current) return
+  //   appRef.current.config.showGravityArrow = showGravityArrow
+  // }, [showGravityArrow])
+
+  // useEffect(() => {
+  //   if (!appRef.current) return
+  //   appRef.current.config.showVelocityArrow = showVelocityArrow
+  // }, [showVelocityArrow])
+
+  useEffect(() => {
+    if (!appRef.current) return
+    appRef.current.config = config
+  }, [config])
 
   useEffect(() => {
     if (ref.current && playing) {
-      appRef.current = new AppController(ref.current)
+      appRef.current = new AppController(ref.current, config)
     }
 
     return () => {
       appRef.current = null // Limpia la referencia
     }
-  }, [playing])
+  }, [playing, config])
 
   return (
     <>
       <canvas ref={ref} id="canvas"></canvas>
 
-      <div className="flex items-center space-x-2 absolute top-4 right-4 px-4 py-2 bg-card-foreground border-2 border-primary rounded-md">
-        <Label className="text-white">Mostrar Vector de Gravedad</Label>
-        <Switch
-          checked={showGravityArrow}
-          onCheckedChange={(v: boolean) => {
-            setShowGravityArrow(v)
-            appRef.current?.scene.displayGravityArrow(v)
+      <div
+        className={`${
+          playing ? 'hidden' : 'absolute'
+        } flex flex-col gap-4  top-1/2 left-1/2`}
+      >
+        <button
+          onClick={() => {
+            setPlaying(!playing)
+            setConfig(gameConfig)
           }}
-          className=""
         >
-          Mostrar Vector de gravedad
-        </Switch>
-        <Label className="text-white">Mostrar Vector de Velocidad</Label>
-        <Switch
-          checked={showVelocityArrow}
-          onCheckedChange={(v: boolean) => {
-            setShowVelocityArrow(v)
-            appRef.current?.scene.displayVelocityArrow(v)
+          Minijuego
+        </button>
+
+        <button
+          onClick={() => {
+            setPlaying(!playing)
+            setConfig(physicsSimulationConfig)
           }}
-          className=""
         >
-          Mostrar Vector de gravedad
-        </Switch>
+          Simulacion
+        </button>
       </div>
 
-      <button
-        onClick={() => {
-          setPlaying(!playing)
-          const audio = new Audio(UnoMusic)
-          audio.play()
-        }}
-        className={`${playing ? 'hidden' : 'absolute'}  top-1/2 left-1/2`}
-      >
-        Play
+      {!playing ? (
+        <>
+          <div className="flex items-center space-x-2 absolute top-4 right-4 px-4 py-2 bg-card-foreground border-2 border-primary rounded-md">
+            {<SwitchesList switches={switches} />}
+          </div>
 
-        
-      </button>
-
-      {/* <audio ref={sound} src={laserSound} className='absolute top-4 left-4 z-10 w-[200px]' /> */}
+          <div className="absolute w-[200px] flex bottom-8  gap-8">
+            <Button>F</Button>
+            <Button>R</Button>
+          </div>
+        </>
+      ) : null}
     </>
   )
 }
