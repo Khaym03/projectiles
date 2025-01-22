@@ -68,6 +68,10 @@ export class Vector {
     return Math.atan2(this.y, this.x)
   }
 
+  static angleBetween(p1: Vector, p2: Vector): number {
+    return Math.atan2(p2.y - p1.y, p2.x - p1.x)
+  }
+
   // Método para crear un vector a partir de magnitud y ángulo
   static fromPolar(magnitude: number, angle: number): Vector {
     const x = magnitude * Math.cos(angle)

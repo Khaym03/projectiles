@@ -11,6 +11,8 @@ import { FOOTBALL, METER_PER_SECOND, PIXELS_PER_METER } from './constants'
 import { Launcher } from './launcher'
 import { Switch } from '@/components/ui/switch'
 import { Label } from '@/components/ui/label'
+import Blaster from './blaster'
+import UnoMusic from './assets/uno.mp3'
 
 class AppController {
   public ctx: CanvasRenderingContext2D
@@ -23,6 +25,7 @@ class AppController {
 
   // public proyectile: Circle
   private proyectiles: Circle[] = []
+  private blasters: Blaster[] = []
 
   public launcher: Launcher
 
@@ -31,7 +34,12 @@ class AppController {
     this.canvas.width = window.innerWidth
     this.canvas.height = window.innerHeight
 
-    this.scene = new Scene(this.ctx, this.entities, this.proyectiles)
+    this.scene = new Scene(
+      this.ctx,
+      this.entities,
+      this.proyectiles,
+      this.blasters
+    )
 
     this.mouse = new Mouse(this.ctx)
 
@@ -61,6 +69,18 @@ class AppController {
   }
 
   setup() {
+    setInterval(() => {
+      this.blasters.pop()
+      this.blasters.push(
+        new Blaster(
+          this.ctx,
+          new Vector(Math.random() * innerWidth, Math.random() * innerHeight),
+          this.proyectiles[0].position
+          // (45 / 180) * Math.PI
+        )
+      )
+    }, 1000)
+
     addEventListener('resize', () => {
       this.canvas.width = window.innerWidth
       this.canvas.height = window.innerHeight
@@ -72,6 +92,11 @@ class AppController {
           {
             const projectile = this.launcher.fire()
             this.proyectiles.push(projectile)
+          }
+          break
+        case 'r':
+          {
+            location.reload()
           }
           break
       }
@@ -97,19 +122,20 @@ class AppController {
 function App() {
   const ref = useRef<HTMLCanvasElement>(null)
   const appRef = useRef<AppController | null>(null)
+  const [playing, setPlaying] = useState(false)
 
   const [showGravityArrow, setShowGravityArrow] = useState(true)
   const [showVelocityArrow, setShowVelocityArrow] = useState(true)
 
   useEffect(() => {
-    if (ref.current) {
+    if (ref.current && playing) {
       appRef.current = new AppController(ref.current)
     }
 
     return () => {
       appRef.current = null // Limpia la referencia
     }
-  }, [])
+  }, [playing])
 
   return (
     <>
@@ -139,6 +165,21 @@ function App() {
           Mostrar Vector de gravedad
         </Switch>
       </div>
+
+      <button
+        onClick={() => {
+          setPlaying(!playing)
+          const audio = new Audio(UnoMusic)
+          audio.play()
+        }}
+        className={`${playing ? 'hidden' : 'absolute'}  top-1/2 left-1/2`}
+      >
+        Play
+
+        
+      </button>
+
+      {/* <audio ref={sound} src={laserSound} className='absolute top-4 left-4 z-10 w-[200px]' /> */}
     </>
   )
 }

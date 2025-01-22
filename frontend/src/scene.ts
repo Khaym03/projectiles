@@ -5,6 +5,7 @@ import { GravityArrow } from './arrows/gravity-arrow'
 import { GravityForce } from './forces/gravity'
 import { Circle } from './circle'
 import { VelocityArrow } from './arrows/arrow'
+import Blaster from './blaster'
 export class Scene {
   private readonly msPerFrame = 1000 / FPS
   private lastFrameTime = 0
@@ -21,7 +22,8 @@ export class Scene {
   constructor(
     private ctx: CanvasRenderingContext2D,
     private entities: Entity[],
-    private proyectiles: Circle[]
+    private proyectiles: Circle[],
+    private blasters: Blaster[]
   ) {
     this.cartesianPlane = new CartesianPlane(this.ctx)
     this.gravityArrow = new GravityArrow(this.ctx)
@@ -38,6 +40,12 @@ export class Scene {
       // this.ctx.fillRect(0, 0, innerWidth, innerHeight)
 
       this.cartesianPlane.draw(innerWidth, innerHeight)
+
+      this.blasters.forEach(blaster => {
+        blaster.update()
+        blaster.checkCollision(this.proyectiles[0])
+        blaster.draw()
+      })
 
       this.proyectiles.forEach(proyectile => {
         this.gravityForce.apply(proyectile)
