@@ -1,6 +1,11 @@
 import { Vector } from '../vector'
 import { Rectangle } from '../rectangle'
-import {  easeInOutQuart, EasingFunction, easingList, randomItem } from '@/lib/utils'
+import {
+  easeInOutQuart,
+  EasingFunction,
+  easingList,
+  randomItem
+} from '@/lib/utils'
 import { Circle } from '@/circle'
 
 export class BarsFromTopToBottom {
@@ -14,7 +19,7 @@ export class BarsFromTopToBottom {
 
   bars: Rectangle[] = []
 
-  public ease : EasingFunction = easeInOutQuart
+  public ease: EasingFunction = easeInOutQuart
 
   constructor(public ctx: CanvasRenderingContext2D, public player: Circle) {}
 
@@ -56,6 +61,42 @@ export class BarsFromTopToBottom {
 
   duration(): number {
     return this.bars.length * this.durationToReachTarget
+  }
+}
+
+export class ReverseOfBarsFromTopToBottom extends BarsFromTopToBottom {
+  constructor(public ctx: CanvasRenderingContext2D, public player: Circle) {
+    super(ctx, player) // Llama al constructor de la clase base
+    this.w = innerWidth / this.numOfSegments // Ancho de cada barra
+    this.h = 150 // Altura de cada barra
+  }
+
+  attack() {
+    this.ease = randomItem(easingList) // Selecciona un easing aleatorio
+    for (let i = 0; i < this.numOfSegments; i++) {
+      // Cambia a un bucle normal
+      const targetPosition = new Vector(
+        (i * innerWidth) / this.numOfSegments, // Posición objetivo en el eje X
+        -this.h // Comienza desde fuera del canvas por encima
+      )
+
+      setTimeout(() => {
+        this.bars.push(
+          new Rectangle(
+            this.ctx,
+            new Vector(
+              (i * innerWidth) / this.numOfSegments, // Posición inicial en el eje X
+              innerHeight + this.h // Comienza fuera del canvas por debajo
+            ),
+            targetPosition,
+            this.w,
+            this.h,
+            this.durationToReachTarget,
+            this.ease
+          )
+        )
+      }, i * this.msPerSpawn)
+    }
   }
 }
 

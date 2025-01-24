@@ -2,7 +2,7 @@ import { Vector } from './vector'
 
 export default class Particle {
   public mass = 0.1 // Masa de la partícula
-  private color = 'rgba(255, 255, 255, 0.01)'
+  private color = 'rgba(255, 255, 255, 0.03)'
 
   constructor(
     private ctx: CanvasRenderingContext2D,

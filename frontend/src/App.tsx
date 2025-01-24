@@ -13,9 +13,27 @@ import { Button } from '@/components/ui/button'
 import Blaster from './blaster'
 import MainMusic from './assets/spider-dance.mp3'
 
-import { WindowMaximise } from '../wailsjs/runtime'
+import {
+  WindowFullscreen,
+  WindowIsFullscreen,
+  WindowUnfullscreen
+} from '../wailsjs/runtime'
 import SwitchesList, { switchOption } from './components/swithces-list'
 import Config, { gameConfig, physicsSimulationConfig } from './config'
+
+const screenHandler = async () => {
+  if (await WindowIsFullscreen()) WindowUnfullscreen()
+  else WindowFullscreen()
+}
+
+addEventListener('keypress', e => {
+  switch (e.key) {
+    case 'f': {
+      screenHandler()
+      break
+    }
+  }
+})
 
 class AppController {
   public ctx: CanvasRenderingContext2D
@@ -115,8 +133,8 @@ class AppController {
       switch (event.key) {
         case ' ': // Espacio para disparar
           {
-            if(this.config.gameMode === 'game') this.mouse.toggleIsDown()
-          
+            if (this.config.gameMode === 'game') this.mouse.toggleIsDown()
+
             // solucion temporal para el bug de la sombra en el fondo
             if (this.launcher && this.config.gameMode !== 'game') {
               const projectile = this.launcher.fire()
@@ -129,9 +147,9 @@ class AppController {
             location.reload()
           }
           break
-        case 'f': {
-          WindowMaximise()
-        }
+        // case 'f': {
+        //   WindowMaximise()
+        // }
       }
     })
 

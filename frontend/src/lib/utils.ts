@@ -68,7 +68,7 @@ export const easingList: EasingFunction[] = [
   easeOutBounce,
   easeInOutBack,
   easeInBounce // mas o menos dificil de esquivar
-  // easeInOutElastic dificil de esquivar
+
 ]
 
 export function randomItem<T>(array: T[]): T {

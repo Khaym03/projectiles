@@ -6,19 +6,19 @@ export class AudioAttackSynchronizer {
   private analyser: AnalyserNode
   private source: AudioBufferSourceNode | null = null
   private dataArray: Uint8Array
-  private threshold: number
+  // private threshold: number
   private attackInProgress = false
 
   constructor(
     public listOfAttacks: AttackAnimation[],
     private particles: Particle[],
-    threshold: number = 100
+    // threshold: number = 100
   ) {
     this.audioContext = new window.AudioContext()
     this.analyser = this.audioContext.createAnalyser()
     this.analyser.fftSize = 2048
     this.dataArray = new Uint8Array(this.analyser.frequencyBinCount)
-    this.threshold = threshold
+    // this.threshold = threshold
   }
 
   // Cambiar el tipo de parámetro a ArrayBuffer

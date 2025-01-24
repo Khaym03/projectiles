@@ -13,6 +13,7 @@ import { CollisionHandler } from './collisions'
 import {
   BarsFromSide,
   BarsFromTopToBottom,
+  ReverseOfBarsFromTopToBottom,
   SquaresFromBottomLeftToTopRight,
   SquaresFromTopRightToBottomLeft,
   TwoBigBarsFromSide,
@@ -66,7 +67,8 @@ export class Scene {
       new TwoBigBarsFromTopToBottom(this.ctx, this.player),
       new TwoBigBarsFromSide(this.ctx, this.player),
       new SquaresFromTopRightToBottomLeft(this.ctx, this.player),
-      new SquaresFromBottomLeftToTopRight(this.ctx, this.player)
+      new SquaresFromBottomLeftToTopRight(this.ctx, this.player),
+      new ReverseOfBarsFromTopToBottom(this.ctx, this.player)
     )
 
     if (this.config.allowGravityChange) {
