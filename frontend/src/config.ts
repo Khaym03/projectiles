@@ -42,9 +42,9 @@ gameConfig.showStats = true
 gameConfig.colideHorizontal = true
 gameConfig.groundCollision = true
 gameConfig.colisionVertical = true
-gameConfig.playMusic = true
+gameConfig.playMusic = false
 gameConfig.showParticles = true
-gameConfig.allowBlasters = true
+gameConfig.allowBlasters = false
 gameConfig.allowGravityChange = true
 gameConfig.gameMode = 'game'
 

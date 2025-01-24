@@ -1,4 +1,4 @@
-import { Entity } from './types'
+import { AttackAnimation, Entity } from './types'
 import { FPS } from './constants'
 import { CartesianPlane } from './plane'
 import { GravityArrow } from './arrows/gravity-arrow'
@@ -10,6 +10,13 @@ import Particle from './particle'
 import { Vector } from './vector'
 import Config from './config'
 import { CollisionHandler } from './collisions'
+import {
+  BarsFromSide,
+  BarsFromTopToBottom
+} from './attacks/BarsFromTopToBottom'
+import MouseConnector from './mouse-conector'
+import { Mouse } from './mouse'
+
 export class Scene {
   private readonly msPerFrame = 1000 / FPS
   private lastFrameTime = 0
@@ -22,13 +29,18 @@ export class Scene {
   private velocityArrow: VelocityArrow
 
   private particles: Particle[] = []
+  private attacks: AttackAnimation[] = []
+
+  private mouseConnector: MouseConnector
 
   constructor(
     private ctx: CanvasRenderingContext2D,
+    private player: Circle,
     private entities: Entity[],
     private proyectiles: Circle[],
     private blasters: Blaster[],
-    private config: Config
+    private config: Config,
+    private mouse: Mouse
   ) {
     this.cartesianPlane = new CartesianPlane(this.ctx)
     this.gravityArrow = new GravityArrow(this.ctx)
@@ -36,10 +48,25 @@ export class Scene {
 
     this.collisionHandler = new CollisionHandler()
 
+    this.mouseConnector = new MouseConnector(this.ctx, this.mouse)
+
+    this.attacks.push(
+      new BarsFromTopToBottom(this.ctx, this.player),
+      new BarsFromSide(this.ctx, this.player)
+    )
+
     if (this.config.allowGravityChange) {
       setInterval(() => {
         this.collisionHandler.changeGravityDirection()
       }, 1000 * 5)
+    }
+
+    if (this.config.gameMode === 'game') {
+      this.attacks.forEach((attack, i) => {
+        setTimeout(() => {
+          attack.attack()
+        }, 4000 * i)
+      })
     }
   }
 
@@ -50,6 +77,12 @@ export class Scene {
       this.ctx.clearRect(0, 0, innerWidth, innerHeight)
 
       this.gravityForce.setGravity(this.collisionHandler.gravityDirection)
+
+      if (this.config.gameMode === 'game')
+        this.attacks.forEach(attack => {
+          attack.update()
+          attack.draw()
+        })
 
       // this.ctx.fillStyle = 'rgba(0, 0, 0, 0.01)'
       // this.ctx.fillRect(0, 0, innerWidth, innerHeight)
@@ -101,13 +134,18 @@ export class Scene {
 
       this.blasters.forEach(blaster => {
         blaster.update()
-        blaster.checkCollision(this.proyectiles[0])
+        blaster.checkCollision(this.player)
         blaster.draw()
       })
 
+      if (this.config.gameMode === 'game') this.playerLogic()
+
       this.proyectiles.forEach(proyectile => {
+       
         this.gravityForce.apply(proyectile)
+       
         proyectile.update()
+        if (this.mouse.getIsDown()) this.mouseConnector.connect(proyectile)
 
         if (this.config.colideHorizontal)
           if (this.config.gameMode === 'simulation')
@@ -143,5 +181,39 @@ export class Scene {
 
       requestAnimationFrame(this.render.bind(this))
     }
+  }
+
+  private playerLogic() {
+    this.gravityForce.apply(this.player)
+
+    if (this.mouse.getIsDown()) this.mouseConnector.connect(this.player)
+    
+      this.player.update()
+
+    if (this.config.colideHorizontal)
+      if (this.config.gameMode === 'simulation')
+        CollisionHandler.handleHitXBoundary(this.player)
+
+    if (this.config.gameMode === 'game')
+      CollisionHandler.handleHitXBoundary(this.player, 0.1)
+
+    if (this.config.colisionVertical)
+      CollisionHandler.hadlehitYBoundary(this.player)
+
+    if (this.config.groundCollision)
+      this.collisionHandler.checkGroundCollision(this.player)
+
+    this.player.CheckCollision(this.proyectiles)
+
+    this.player.draw()
+
+    if (this.config.showGravityArrow) {
+      this.gravityArrow.draw(
+        this.player.position,
+        this.gravityForce.getGravity()
+      )
+    }
+
+    if (this.config.showVelocityArrow) this.velocityArrow.draw(this.player)
   }
 }

@@ -2,7 +2,7 @@ import { Vector } from './vector'
 import { Entity } from './types'
 import { CollisionHandler } from './collisions'
 import { Friction } from './friction'
-import { EARTH_GRAVITY, METER_PER_SECOND } from './constants'
+import { EARTH_GRAVITY } from './constants'
 import { Mouse } from './mouse'
 import { AirResistance } from './forces/air-resistance'
 
@@ -16,7 +16,6 @@ export class Circle implements Entity {
 
   constructor(
     public ctx: CanvasRenderingContext2D,
-    private mouse: Mouse,
     public position: Vector,
     public velocity: Vector,
     public radius: number,
@@ -25,23 +24,9 @@ export class Circle implements Entity {
   ) {}
 
   update() {
-    if (this.mouse.getIsDown()) {
-      this.drawMouseLine(this.mouse)
 
-      const distance = Vector.distance(this.position, this.mouse.getPosition())
-
-      const magnitude = distance * 0.1
-      const angle = Vector.angle(this.position, this.mouse.getPosition())
-
-      const force = Vector.fromPolar(magnitude, angle)
-
-      if (distance > 100) {
-        this.velocity = this.velocity.add(force).scale(METER_PER_SECOND)
-      }
-    }
-
-    if (this.isAtRest() ) {
-      this.velocity.x =0
+    if (this.isAtRest()) {
+      this.velocity.x = 0
       this.velocity.y = 0
       return
     }
@@ -142,6 +127,10 @@ export class Circle implements Entity {
       this.position = this.position.subtract(correction)
       other.position = other.position.add(correction)
     }
+  }
+
+  public area(): number {
+    return Math.PI * this.radius * this.radius
   }
 
   // private handleHitXBoundary() {

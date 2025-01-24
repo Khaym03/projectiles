@@ -1,6 +1,5 @@
 import { Vector } from './vector'
 import { Circle } from './circle'
-import { Mouse } from './mouse'
 import { FOOTBALL, METER_PER_SECOND, PIXELS_PER_METER } from './constants'
 import Config from './config'
 
@@ -13,7 +12,6 @@ export class Launcher {
 
   constructor(
     private ctx: CanvasRenderingContext2D,
-    private mouse: Mouse,
     private power: number,
     private config: Config
   ) {
@@ -47,7 +45,6 @@ export class Launcher {
     const position = new Vector(1, innerHeight)
     const projectile = new Circle(
       this.ctx,
-      this.mouse,
       position.scale(PIXELS_PER_METER),
       new Vector(0, 0).scale(METER_PER_SECOND), // at rest
       FOOTBALL.radius,

@@ -43,4 +43,8 @@ export class Mouse {
   getPosition(): Vector {
     return this.position
   }
+
+  toggleIsDown() {
+    this.isDown = !this.isDown
+  }
 }

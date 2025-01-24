@@ -17,4 +17,11 @@ export interface Proyectile {
     mass: number
 }
 
+export interface AttackAnimation {
+    attack(): void
+    update(): void
+    draw(): void
+    duration(): number
+}
+
 

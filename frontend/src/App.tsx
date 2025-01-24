@@ -19,6 +19,7 @@ import Config, { gameConfig, physicsSimulationConfig } from './config'
 
 class AppController {
   public ctx: CanvasRenderingContext2D
+  private player: Circle
 
   public entities: Entity[] = []
   public scene: Scene
@@ -41,32 +42,43 @@ class AppController {
     this.canvas.width = window.innerWidth
     this.canvas.height = window.innerHeight
 
-    this.scene = new Scene(
-      this.ctx,
-      this.entities,
-      this.proyectiles,
-      this.blasters,
-      this.config
-    )
-
     this.mouse = new Mouse(this.ctx)
 
     if (this.config.showStats)
       this.panelStats = new Stats(this.ctx, this.config)
 
-    this.proyectiles.push(
-      new Circle(
+    if (this.config.gameMode === 'game') {
+      this.player = new Circle(
         this.ctx,
-        this.mouse,
         new Vector(10, 10).scale(PIXELS_PER_METER),
         new Vector(5, 0).scale(METER_PER_SECOND),
         25,
         FOOTBALL.mass
       )
+    } else {
+      this.proyectiles.push(
+        new Circle(
+          this.ctx,
+          new Vector(10, 10), //.scale(PIXELS_PER_METER)
+          new Vector(5, 0).scale(METER_PER_SECOND),
+          25,
+          FOOTBALL.mass
+        )
+      )
+    }
+
+    this.scene = new Scene(
+      this.ctx,
+      this.player,
+      this.entities,
+      this.proyectiles,
+      this.blasters,
+      this.config,
+      this.mouse
     )
 
     if (this.config.showStats) {
-      this.launcher = new Launcher(this.ctx, this.mouse, 20, this.config)
+      this.launcher = new Launcher(this.ctx, 20, this.config)
       this.panelStats.setLauncher(this.launcher)
       this.panelStats.setProjectile(this.proyectiles[0])
       this.entities.push(this.panelStats)
@@ -87,7 +99,7 @@ class AppController {
           new Blaster(
             this.ctx,
             new Vector(Math.random() * innerWidth, Math.random() * innerHeight),
-            this.proyectiles[0].position
+            this.player.position
             // (45 / 180) * Math.PI
           )
         )
@@ -103,6 +115,8 @@ class AppController {
       switch (event.key) {
         case ' ': // Espacio para disparar
           {
+            if(this.config.gameMode === 'game') this.mouse.toggleIsDown()
+          
             // solucion temporal para el bug de la sombra en el fondo
             if (this.launcher && this.config.gameMode !== 'game') {
               const projectile = this.launcher.fire()
@@ -116,25 +130,20 @@ class AppController {
           }
           break
         case 'f': {
-          // this.fullScreen = !this.fullScreen
-          // if (this.fullScreen) {
-          //   WindowUnfullscreen()
-          // } else {
-          //   WindowFullscreen()
-          // }
           WindowMaximise()
         }
       }
     })
 
-    this.canvas.addEventListener('mousedown', e => {
-      this.mouse.setIsDown(true)
+    this.canvas.addEventListener('click', e => {
+      this.mouse.toggleIsDown()
       this.mouse.setPosition(new Vector(e.clientX, e.clientY))
     })
 
-    this.canvas.addEventListener('mouseup', () => {
-      this.mouse.setIsDown(false)
-    })
+    // this.canvas.addEventListener('mouseup', () => {
+    //   if (this.config.gameMode === 'simulation')  this.mouse.setIsDown(false)
+
+    // })
 
     this.canvas.addEventListener('mousemove', e => {
       if (this.mouse.getIsDown()) {
