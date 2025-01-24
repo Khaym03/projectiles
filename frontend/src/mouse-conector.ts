@@ -14,12 +14,12 @@ export default class MouseConnector {
   private pullForce(c: Circle) {
     const distance = Vector.distance(c.position, this.mouse.getPosition())
 
-    const magnitude = distance * 0.1
+    const magnitude = distance * 0.3
     const angle = Vector.angle(c.position, this.mouse.getPosition())
 
     const force = Vector.fromPolar(magnitude, angle)
 
-    if (distance > 100) {
+    if (distance > 1) {
       c.velocity = c.velocity.add(force).scale(METER_PER_SECOND)
     }
   }

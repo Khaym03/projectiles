@@ -12,10 +12,16 @@ import Config from './config'
 import { CollisionHandler } from './collisions'
 import {
   BarsFromSide,
-  BarsFromTopToBottom
+  BarsFromTopToBottom,
+  SquaresFromBottomLeftToTopRight,
+  SquaresFromTopRightToBottomLeft,
+  TwoBigBarsFromSide,
+  TwoBigBarsFromTopToBottom
 } from './attacks/BarsFromTopToBottom'
 import MouseConnector from './mouse-conector'
 import { Mouse } from './mouse'
+import { AudioAttackSynchronizer } from './attacks/audioAttack'
+import Music from '@/assets/theatore.mp3'
 
 export class Scene {
   private readonly msPerFrame = 1000 / FPS
@@ -32,6 +38,8 @@ export class Scene {
   private attacks: AttackAnimation[] = []
 
   private mouseConnector: MouseConnector
+
+  private audioSynchronizer: AudioAttackSynchronizer | null = null
 
   constructor(
     private ctx: CanvasRenderingContext2D,
@@ -50,23 +58,21 @@ export class Scene {
 
     this.mouseConnector = new MouseConnector(this.ctx, this.mouse)
 
+    this.loadAudio(Music)
+
     this.attacks.push(
       new BarsFromTopToBottom(this.ctx, this.player),
-      new BarsFromSide(this.ctx, this.player)
+      new BarsFromSide(this.ctx, this.player),
+      new TwoBigBarsFromTopToBottom(this.ctx, this.player),
+      new TwoBigBarsFromSide(this.ctx, this.player),
+      new SquaresFromTopRightToBottomLeft(this.ctx, this.player),
+      new SquaresFromBottomLeftToTopRight(this.ctx, this.player)
     )
 
     if (this.config.allowGravityChange) {
       setInterval(() => {
         this.collisionHandler.changeGravityDirection()
-      }, 1000 * 5)
-    }
-
-    if (this.config.gameMode === 'game') {
-      this.attacks.forEach((attack, i) => {
-        setTimeout(() => {
-          attack.attack()
-        }, 4000 * i)
-      })
+      }, 1000 * 8)
     }
   }
 
@@ -92,21 +98,16 @@ export class Scene {
       if (this.config.showCenterOfThePlane)
         this.cartesianPlane.drawCenterOfThePlane(innerWidth, innerHeight)
 
-      if (this.config.showParticles && this.particles.length < 10) {
-        for (let i = 0; i < 21; i++) {
-          this.particles.push(
-            new Particle(
-              this.ctx,
-              5,
-              5,
-              new Vector(
-                Math.random() * innerWidth,
-                Math.random() * innerHeight
-              ),
-              new Vector(10, 10)
-            )
+      if (this.config.showParticles && this.particles.length < 5) {
+        this.particles.push(
+          new Particle(
+            this.ctx,
+            5,
+            5,
+            new Vector(Math.random() * innerWidth, Math.random() * innerHeight),
+            new Vector(10, 10)
           )
-        }
+        )
       }
 
       const maxSpeed = 15 // Define el límite de velocidad
@@ -141,9 +142,8 @@ export class Scene {
       if (this.config.gameMode === 'game') this.playerLogic()
 
       this.proyectiles.forEach(proyectile => {
-       
         this.gravityForce.apply(proyectile)
-       
+
         proyectile.update()
         if (this.mouse.getIsDown()) this.mouseConnector.connect(proyectile)
 
@@ -187,8 +187,8 @@ export class Scene {
     this.gravityForce.apply(this.player)
 
     if (this.mouse.getIsDown()) this.mouseConnector.connect(this.player)
-    
-      this.player.update()
+
+    this.player.update()
 
     if (this.config.colideHorizontal)
       if (this.config.gameMode === 'simulation')
@@ -215,5 +215,27 @@ export class Scene {
     }
 
     if (this.config.showVelocityArrow) this.velocityArrow.draw(this.player)
+  }
+
+  public executeRandomAttack(): void {
+    const randomAttack =
+      this.attacks[Math.floor(Math.random() * this.attacks.length)]
+
+    randomAttack.attack()
+  }
+
+  private async loadAudio(filePath: string): Promise<void> {
+    const response = await fetch(filePath) // Usa fetch para obtener el archivo
+    const arrayBuffer = await response.arrayBuffer() // Convierte a ArrayBuffer
+
+    if (!this.audioSynchronizer) {
+      this.audioSynchronizer = new AudioAttackSynchronizer(
+        this.attacks,
+        this.particles
+      ) // Inicializa si no está ya creado
+    }
+
+    await this.audioSynchronizer.loadAudio(arrayBuffer) // Carga el audio en el sincronizador
+    this.audioSynchronizer.start() // Inicia la reproducción
   }
 }

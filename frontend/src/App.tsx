@@ -11,7 +11,7 @@ import { FOOTBALL, METER_PER_SECOND, PIXELS_PER_METER } from './constants'
 import { Launcher } from './launcher'
 import { Button } from '@/components/ui/button'
 import Blaster from './blaster'
-import MainMusic from './assets/theatore.mp3'
+import MainMusic from './assets/spider-dance.mp3'
 
 import { WindowMaximise } from '../wailsjs/runtime'
 import SwitchesList, { switchOption } from './components/swithces-list'
