@@ -43,6 +43,10 @@ export class AudioAttackSynchronizer {
     }
   }
 
+  stop(): void {
+    if (this.source) this.source.stop()
+  }
+
   private update(): void {
     if (!this.source) return
 

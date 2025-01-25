@@ -2,7 +2,7 @@ import { Circle } from "./circle"
 import { Vector } from "./vector"
 
 export interface Entity {
-    update(): void
+    update(deltaTime: number): void
     draw(): void
     position: Vector
 }

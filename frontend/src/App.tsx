@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from 'react'
 import { Scene } from './scene'
 import { Mouse } from './mouse'
 import { Entity } from './types'
-import { Circle } from './circle'
+import { Circle, Player } from './circle'
 import { Vector } from './vector'
 import { Stats } from './stats'
 import { FOOTBALL, METER_PER_SECOND, PIXELS_PER_METER } from './constants'
@@ -37,7 +37,7 @@ addEventListener('keypress', e => {
 
 class AppController {
   public ctx: CanvasRenderingContext2D
-  private player: Circle
+  private player: Player
 
   public entities: Entity[] = []
   public scene: Scene
@@ -66,12 +66,10 @@ class AppController {
       this.panelStats = new Stats(this.ctx, this.config)
 
     if (this.config.gameMode === 'game') {
-      this.player = new Circle(
+      this.player = new Player(
         this.ctx,
         new Vector(10, 10).scale(PIXELS_PER_METER),
         new Vector(5, 0).scale(METER_PER_SECOND),
-        25,
-        FOOTBALL.mass
       )
     } else {
       this.proyectiles.push(

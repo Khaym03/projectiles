@@ -2,9 +2,11 @@ import { Vector } from './vector'
 import { Entity } from './types'
 import { CollisionHandler } from './collisions'
 import { Friction } from './friction'
-import { EARTH_GRAVITY } from './constants'
+import { EARTH_GRAVITY, FOOTBALL } from './constants'
 import { Mouse } from './mouse'
 import { AirResistance } from './forces/air-resistance'
+import HeartImg from '@/assets/heart-sheet-sheet.png'
+import { SpriteSheet } from './sprite-sheet'
 
 export class Circle implements Entity {
   public gravity = EARTH_GRAVITY
@@ -23,8 +25,7 @@ export class Circle implements Entity {
     public mass: number
   ) {}
 
-  update() {
-
+  update(_deltaTime: number) {
     if (this.isAtRest()) {
       this.velocity.x = 0
       this.velocity.y = 0
@@ -132,14 +133,86 @@ export class Circle implements Entity {
   public area(): number {
     return Math.PI * this.radius * this.radius
   }
+}
 
-  // private handleHitXBoundary() {
-  //   if (this.position.x + this.radius > innerWidth) {
-  //     this.position.x = innerWidth - this.radius // Ajustar posición
-  //     this.velocity.x = -this.velocity.x // Invertir velocidad
-  //   } else if (this.position.x - this.radius < 0) {
-  //     this.position.x = this.radius // Ajustar posición
-  //     this.velocity.x = -this.velocity.x // Invertir velocidad
-  //   }
-  // }
+export class Player extends Circle {
+  public hp = 5
+  public isInvencible = false
+  public heartSpriteSheet: SpriteSheet
+
+  constructor(
+    ctx: CanvasRenderingContext2D,
+    position: Vector,
+    velocity: Vector
+  ) {
+    super(ctx, position, velocity, 30, FOOTBALL.mass)
+
+    this.heartSpriteSheet = new SpriteSheet(HeartImg, 32, 32, 2)
+  }
+
+  update(_deltaTime: number) {
+    this.heartSpriteSheet.update()
+
+    if (this.isAtRest()) {
+      this.velocity.x = 0
+      this.velocity.y = 0
+      return
+    }
+
+    // Aplicar resistencia al aire
+    this.airResistance.apply(this)
+
+    // Actualizar la posición sumando la velocidad
+    this.position = this.position.add(this.velocity)
+
+    // Verificar colisiones con los límites
+    // this.handleHitXBoundary()
+
+    // this.collisionHandler.checkGroundCollision()
+
+    if (this.collisionHandler.isInGround(this)) {
+      this.friction.apply(this)
+    }
+  }
+
+  draw() {
+    this.ctx.beginPath()
+
+    // Dibuja un círculo completo
+    this.ctx.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2)
+
+    this.ctx.fillStyle = this.color
+    this.ctx.fill()
+
+    this.ctx.closePath()
+  }
+
+  takeDamage() {
+    if (this.isInvencible) return
+
+    this.hp--
+    this.isInvencible = true
+    this.color = 'red'
+    setTimeout(() => {
+      this.isInvencible = false
+      this.color = 'hsl(217.2 91.2% 59.8%)'
+    }, 1000)
+  }
+
+  healthbar() {
+    const w = this.heartSpriteSheet.frameWidth; // Ancho del corazón
+    const spacing = 5; // Espaciado entre corazones
+    const centerScreenX = innerWidth / 2; // Centro de la pantalla
+    const startX = centerScreenX - (this.hp * (w + spacing)) / 2; // Ajustar para el espacio
+    const y = innerHeight * 0.8; // Posición Y de la barra de salud
+
+    for (let i = 0; i < this.hp; i++) {
+        // Dibuja cada corazón en su propia posición
+        this.heartSpriteSheet.draw(
+            this.ctx,
+            startX + i * (w + spacing), // Ajusta la posición X para cada corazón
+            y
+        );
+    }
+  }
 }

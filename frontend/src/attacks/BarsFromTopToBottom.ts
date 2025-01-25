@@ -6,7 +6,7 @@ import {
   easingList,
   randomItem
 } from '@/lib/utils'
-import { Circle } from '@/circle'
+import { Player } from '@/circle'
 
 export class BarsFromTopToBottom {
   numOfSegments = 4
@@ -21,7 +21,7 @@ export class BarsFromTopToBottom {
 
   public ease: EasingFunction = easeInOutQuart
 
-  constructor(public ctx: CanvasRenderingContext2D, public player: Circle) {}
+  constructor(public ctx: CanvasRenderingContext2D, public player: Player) {}
 
   attack() {
     this.ease = randomItem(easingList)
@@ -55,7 +55,7 @@ export class BarsFromTopToBottom {
   draw() {
     this.bars.forEach(bar => {
       bar.draw()
-      bar.checkCollision(this.player)
+      if(bar.checkCollision(this.player)) this.player.takeDamage()
     })
   }
 
@@ -65,7 +65,7 @@ export class BarsFromTopToBottom {
 }
 
 export class ReverseOfBarsFromTopToBottom extends BarsFromTopToBottom {
-  constructor(public ctx: CanvasRenderingContext2D, public player: Circle) {
+  constructor(public ctx: CanvasRenderingContext2D, public player: Player) {
     super(ctx, player) // Llama al constructor de la clase base
     this.w = innerWidth / this.numOfSegments // Ancho de cada barra
     this.h = 150 // Altura de cada barra
@@ -101,7 +101,7 @@ export class ReverseOfBarsFromTopToBottom extends BarsFromTopToBottom {
 }
 
 export class SquaresFromTopRightToBottomLeft extends BarsFromTopToBottom {
-  constructor(public ctx: CanvasRenderingContext2D, public player: Circle) {
+  constructor(public ctx: CanvasRenderingContext2D, public player: Player) {
     super(ctx, player) // Llama al constructor de la clase base
     this.w = 25
     this.h = 25
@@ -136,7 +136,7 @@ export class SquaresFromTopRightToBottomLeft extends BarsFromTopToBottom {
 }
 
 export class SquaresFromBottomLeftToTopRight extends BarsFromTopToBottom {
-  constructor(public ctx: CanvasRenderingContext2D, public player: Circle) {
+  constructor(public ctx: CanvasRenderingContext2D, public player: Player) {
     super(ctx, player) // Llama al constructor de la clase base
     this.w = 25 // Ancho del cuadrado
     this.h = 25 // Alto del cuadrado
@@ -171,7 +171,7 @@ export class SquaresFromBottomLeftToTopRight extends BarsFromTopToBottom {
 }
 
 export class TwoBigBarsFromTopToBottom extends BarsFromTopToBottom {
-  constructor(ctx: CanvasRenderingContext2D, player: Circle) {
+  constructor(ctx: CanvasRenderingContext2D, player: Player) {
     super(ctx, player)
     this.numOfSegments = 2
     this.gap = 1
@@ -205,7 +205,7 @@ export class TwoBigBarsFromTopToBottom extends BarsFromTopToBottom {
 }
 
 export class BarsFromSide extends BarsFromTopToBottom {
-  constructor(ctx: CanvasRenderingContext2D, player: Circle) {
+  constructor(ctx: CanvasRenderingContext2D, player: Player) {
     super(ctx, player)
     this.numOfSegments = 4
     this.gap = 0.5
@@ -239,7 +239,7 @@ export class BarsFromSide extends BarsFromTopToBottom {
 }
 
 export class TwoBigBarsFromSide extends BarsFromSide {
-  constructor(ctx: CanvasRenderingContext2D, player: Circle) {
+  constructor(ctx: CanvasRenderingContext2D, player: Player) {
     super(ctx, player)
     this.numOfSegments = 2
     this.gap = 1

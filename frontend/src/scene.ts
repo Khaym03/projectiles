@@ -3,7 +3,7 @@ import { FPS } from './constants'
 import { CartesianPlane } from './plane'
 import { GravityArrow } from './arrows/gravity-arrow'
 import { GravityForce } from './forces/gravity'
-import { Circle } from './circle'
+import { Circle, Player } from './circle'
 import { VelocityArrow } from './arrows/arrow'
 import Blaster from './blaster'
 import Particle from './particle'
@@ -23,6 +23,7 @@ import MouseConnector from './mouse-conector'
 import { Mouse } from './mouse'
 import { AudioAttackSynchronizer } from './attacks/audioAttack'
 import Music from '@/assets/theatore.mp3'
+import { GameOver } from './game-over'
 
 export class Scene {
   private readonly msPerFrame = 1000 / FPS
@@ -42,9 +43,11 @@ export class Scene {
 
   private audioSynchronizer: AudioAttackSynchronizer | null = null
 
+  private gameOver: GameOver
+
   constructor(
     private ctx: CanvasRenderingContext2D,
-    private player: Circle,
+    private player: Player,
     private entities: Entity[],
     private proyectiles: Circle[],
     private blasters: Blaster[],
@@ -54,6 +57,8 @@ export class Scene {
     this.cartesianPlane = new CartesianPlane(this.ctx)
     this.gravityArrow = new GravityArrow(this.ctx)
     this.velocityArrow = new VelocityArrow(this.ctx)
+
+    this.gameOver = new GameOver(this.ctx)
 
     this.collisionHandler = new CollisionHandler()
 
@@ -83,6 +88,12 @@ export class Scene {
 
     if (deltaTime >= this.msPerFrame) {
       this.ctx.clearRect(0, 0, innerWidth, innerHeight)
+
+      if (this.player.hp <= 0) {
+        this.audioSynchronizer.stop()
+        this.gameOver.draw()
+        return
+      }
 
       this.gravityForce.setGravity(this.collisionHandler.gravityDirection)
 
@@ -141,12 +152,12 @@ export class Scene {
         blaster.draw()
       })
 
-      if (this.config.gameMode === 'game') this.playerLogic()
+      if (this.config.gameMode === 'game') this.playerLogic(currentTime)
 
       this.proyectiles.forEach(proyectile => {
         this.gravityForce.apply(proyectile)
 
-        proyectile.update()
+        proyectile.update(currentTime)
         if (this.mouse.getIsDown()) this.mouseConnector.connect(proyectile)
 
         if (this.config.colideHorizontal)
@@ -177,7 +188,7 @@ export class Scene {
       })
 
       this.entities.forEach(entity => {
-        entity.update()
+        entity.update(currentTime)
         entity.draw()
       })
 
@@ -185,12 +196,12 @@ export class Scene {
     }
   }
 
-  private playerLogic() {
+  private playerLogic(deltaTime: number) {
+    this.player.healthbar()
+
     this.gravityForce.apply(this.player)
 
     if (this.mouse.getIsDown()) this.mouseConnector.connect(this.player)
-
-    this.player.update()
 
     if (this.config.colideHorizontal)
       if (this.config.gameMode === 'simulation')
@@ -205,10 +216,6 @@ export class Scene {
     if (this.config.groundCollision)
       this.collisionHandler.checkGroundCollision(this.player)
 
-    this.player.CheckCollision(this.proyectiles)
-
-    this.player.draw()
-
     if (this.config.showGravityArrow) {
       this.gravityArrow.draw(
         this.player.position,
@@ -217,6 +224,12 @@ export class Scene {
     }
 
     if (this.config.showVelocityArrow) this.velocityArrow.draw(this.player)
+
+    this.player.update(deltaTime)
+
+    this.player.CheckCollision(this.proyectiles)
+
+    this.player.draw()
   }
 
   public executeRandomAttack(): void {
