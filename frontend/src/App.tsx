@@ -1,6 +1,6 @@
 import './App.css'
 import { useRef, useEffect, useState } from 'react'
-
+import GameScreenShot from '@/assets/game-img.jpg'
 import { Scene } from './scene'
 import { Mouse } from './mouse'
 import { Entity } from './types'
@@ -9,21 +9,21 @@ import { Vector } from './vector'
 import { Stats } from './stats'
 import { FOOTBALL, METER_PER_SECOND, PIXELS_PER_METER } from './constants'
 import { Launcher } from './launcher'
-import { Button } from '@/components/ui/button'
 import Blaster from './blaster'
-import MainMusic from './assets/spider-dance.mp3'
 
 import {
+  Quit,
   WindowFullscreen,
   WindowIsFullscreen,
   WindowUnfullscreen
 } from '../wailsjs/runtime'
-import SwitchesList, { switchOption } from './components/swithces-list'
+// import  { switchOption } from './components/swithces-list'
 import Config, { gameConfig, physicsSimulationConfig } from './config'
 
 const screenHandler = async () => {
-  if (await WindowIsFullscreen()) WindowUnfullscreen()
-  else WindowFullscreen()
+  if (await WindowIsFullscreen()) {
+    WindowUnfullscreen()
+  } else WindowFullscreen()
 }
 
 addEventListener('keypress', e => {
@@ -51,11 +51,7 @@ class AppController {
 
   public launcher: Launcher | undefined
 
-  public music: HTMLAudioElement = new Audio(MainMusic)
-
   constructor(public canvas: HTMLCanvasElement, public config: Config) {
-    if (config.playMusic) this.music.play()
-
     this.ctx = this.canvas.getContext('2d')!
     this.canvas.width = window.innerWidth
     this.canvas.height = window.innerHeight
@@ -69,7 +65,7 @@ class AppController {
       this.player = new Player(
         this.ctx,
         new Vector(10, 10).scale(PIXELS_PER_METER),
-        new Vector(5, 0).scale(METER_PER_SECOND),
+        new Vector(5, 0).scale(METER_PER_SECOND)
       )
     } else {
       this.proyectiles.push(
@@ -178,18 +174,18 @@ function App() {
   // const [showGravityArrow, setShowGravityArrow] = useState(true)
   // const [showVelocityArrow, setShowVelocityArrow] = useState(true)
 
-  const switches: switchOption[] = [
-    // {
-    //   label: 'Mostrar Vector de Gravedad',
-    //   checked: showGravityArrow,
-    //   handler: (v: boolean) => setShowGravityArrow(v)
-    // },
-    // {
-    //   label: 'Mostrar Vector de Velocidad',
-    //   checked: showVelocityArrow,
-    //   handler: (v: boolean) => setShowVelocityArrow(v)
-    // }
-  ]
+  // const switches: switchOption[] = [
+  // {
+  //   label: 'Mostrar Vector de Gravedad',
+  //   checked: showGravityArrow,
+  //   handler: (v: boolean) => setShowGravityArrow(v)
+  // },
+  // {
+  //   label: 'Mostrar Vector de Velocidad',
+  //   checked: showVelocityArrow,
+  //   handler: (v: boolean) => setShowVelocityArrow(v)
+  // }
+  // ]
 
   // useEffect(() => {
   //   if (!appRef.current) return
@@ -217,15 +213,25 @@ function App() {
   }, [playing, config])
 
   return (
-    <>
-      <canvas ref={ref} id="canvas"></canvas>
+    <section className="w-screen h-screen flex flex-col justify-center items-center">
+      <canvas
+        className={playing ? '' : 'hidden'}
+        ref={ref}
+        id="canvas"
+      ></canvas>
+      <img
+        src={GameScreenShot}
+        alt="imagen del juego"
+        className={
+          playing
+            ? 'hidden'
+            : 'absolute top-0 left-0 w-full h-full object-cover filter blur-xl -z-10'
+        }
+      />
 
-      <div
-        className={`${
-          playing ? 'hidden' : 'absolute'
-        } flex flex-col gap-4  top-1/2 left-1/2`}
-      >
+      <div className={`${playing ? 'hidden' : 'visible'} flex flex-col gap-4 mt-16`}>
         <button
+          className="text-lg p-2 px-8 bg-black border-4 border-primary  rounded-md text-white  transition duration-400 shadow-primary  shadow-[-5px_5px_0px_0px]  hover:-translate-y-1 hover:translate-x-1 font-medium"
           onClick={() => {
             setPlaying(!playing)
             setConfig(gameConfig)
@@ -235,6 +241,7 @@ function App() {
         </button>
 
         <button
+          className="text-lg p-2 px-8 bg-black border-4 border-primary  rounded-md text-white transition duration-400 shadow-primary  shadow-[-5px_5px_0px_0px]  hover:-translate-y-1 hover:translate-x-1 font-medium"
           onClick={() => {
             setPlaying(!playing)
             setConfig(physicsSimulationConfig)
@@ -242,21 +249,30 @@ function App() {
         >
           Simulacion
         </button>
+
+        <button
+          className="text-lg p-2 px-8 bg-black border-4 border-primary  rounded-md text-white transition duration-400 shadow-primary  shadow-[-5px_5px_0px_0px]  hover:-translate-y-1 hover:translate-x-1 font-medium"
+          onClick={() => {
+            Quit()
+          }}
+        >
+          Salir
+        </button>
       </div>
 
       {!playing ? (
         <>
-          <div className="flex items-center space-x-2 absolute top-4 right-4 px-4 py-2 bg-card-foreground border-2 border-primary rounded-md">
+          {/* <div className="flex items-center space-x-2 absolute top-4 right-4 px-4 py-2 bg-card-foreground border-2 border-primary rounded-md">
             {<SwitchesList switches={switches} />}
-          </div>
+          </div> */}
 
-          <div className="absolute w-[200px] flex bottom-8  gap-8">
-            <Button>F</Button>
-            <Button>R</Button>
+          <div className="flex bottom-8 gap-8 mt-16">
+            <label>F para Pantalla completa</label>
+            <label>R para reiniciar</label>
           </div>
         </>
       ) : null}
-    </>
+    </section>
   )
 }
 

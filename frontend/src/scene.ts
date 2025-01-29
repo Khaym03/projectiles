@@ -24,6 +24,7 @@ import { Mouse } from './mouse'
 import { AudioAttackSynchronizer } from './attacks/audioAttack'
 import Music from '@/assets/theatore.mp3'
 import { GameOver } from './game-over'
+import { Winner } from './winner'
 
 export class Scene {
   private readonly msPerFrame = 1000 / FPS
@@ -44,6 +45,10 @@ export class Scene {
   private audioSynchronizer: AudioAttackSynchronizer | null = null
 
   private gameOver: GameOver
+
+  public playerWon = false
+
+  private winner: Winner = new Winner()
 
   constructor(
     private ctx: CanvasRenderingContext2D,
@@ -85,11 +90,17 @@ export class Scene {
 
   render(currentTime: number) {
     const deltaTime = currentTime - this.lastFrameTime
+    // if(this.audioSynchronizer === null) return
 
     if (deltaTime >= this.msPerFrame) {
       this.ctx.clearRect(0, 0, innerWidth, innerHeight)
 
-      if (this.player.hp <= 0) {
+      if (this.audioSynchronizer && this.audioSynchronizer.ended) {
+        this.playerWon = true
+        this.winner.show()
+      }
+
+      if (this.config.gameMode === 'game' && this.player.hp <= 0) {
         this.audioSynchronizer.stop()
         this.gameOver.draw()
         return
@@ -251,6 +262,7 @@ export class Scene {
     }
 
     await this.audioSynchronizer.loadAudio(arrayBuffer) // Carga el audio en el sincronizador
-    this.audioSynchronizer.start() // Inicia la reproducción
+    if(this.config.playMusic) this.audioSynchronizer.start()
+  
   }
 }

@@ -6,8 +6,10 @@ export class AudioAttackSynchronizer {
   private analyser: AnalyserNode
   private source: AudioBufferSourceNode | null = null
   private dataArray: Uint8Array
+  private gainNode: GainNode
   // private threshold: number
   private attackInProgress = false
+  public ended = false
 
   constructor(
     public listOfAttacks: AttackAnimation[],
@@ -18,7 +20,7 @@ export class AudioAttackSynchronizer {
     this.analyser = this.audioContext.createAnalyser()
     this.analyser.fftSize = 2048
     this.dataArray = new Uint8Array(this.analyser.frequencyBinCount)
-    // this.threshold = threshold
+    this.gainNode = this.audioContext.createGain()
   }
 
   // Cambiar el tipo de parámetro a ArrayBuffer
@@ -41,6 +43,10 @@ export class AudioAttackSynchronizer {
     } else {
       console.error('El audio no ha sido cargado.')
     }
+
+    this.source.addEventListener('ended', () => {
+      this.ended = true
+    })
   }
 
   stop(): void {
@@ -93,5 +99,12 @@ export class AudioAttackSynchronizer {
       this.listOfAttacks[Math.floor(Math.random() * this.listOfAttacks.length)]
 
     return randomAttack
+  }
+
+  // 0 < x < 1
+  public setVolume(volume: number): void {
+    if (this.gainNode) {
+      this.gainNode.gain.value = volume; 
+    }
   }
 }

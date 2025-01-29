@@ -145,7 +145,7 @@ export class Player extends Circle {
     position: Vector,
     velocity: Vector
   ) {
-    super(ctx, position, velocity, 30, FOOTBALL.mass)
+    super(ctx, position, velocity, 24, FOOTBALL.mass)
 
     this.heartSpriteSheet = new SpriteSheet(HeartImg, 32, 32, 2)
   }

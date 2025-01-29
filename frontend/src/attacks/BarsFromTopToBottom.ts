@@ -7,41 +7,54 @@ import {
   randomItem
 } from '@/lib/utils'
 import { Player } from '@/circle'
+import { SpriteSheet } from '@/sprite-sheet'
+import SquareBulletSheet from '@/assets/square-bullet.png'
+import SquareBulletSheet2 from '@/assets/square-bullet-purple.png'
+// import HorizontalRect from '@/assets/rect-horizontal-sheet.png'
 
 export class BarsFromTopToBottom {
   numOfSegments = 4
   gap = 1
-  w = innerWidth / this.numOfSegments - this.gap
-  h = 150
+  w = 320
+  // innerWidth / this.numOfSegments - this.gap
+  h = 128
   durationToReachTarget = 2250
 
   msPerSpawn = 500
 
   bars: Rectangle[] = []
+  color = 'hsl(27, 96%, 61%)'
+
+  public spriteSheet: SpriteSheet
 
   public ease: EasingFunction = easeInOutQuart
 
-  constructor(public ctx: CanvasRenderingContext2D, public player: Player) {}
+  constructor(public ctx: CanvasRenderingContext2D, public player: Player) {
+    // this.spriteSheet = new SpriteSheet(HorizontalRect, this.w, this.h, 5)
+  }
 
   attack() {
     this.ease = randomItem(easingList)
+    let rect: Rectangle
     for (let i = 0; i < this.numOfSegments; i++) {
       const targetPosition = new Vector(
         (i * innerWidth) / this.numOfSegments,
         innerHeight + this.h
       )
       setTimeout(() => {
-        this.bars.push(
-          new Rectangle(
-            this.ctx,
-            new Vector((i * innerWidth) / this.numOfSegments, -this.h),
-            targetPosition,
-            this.w,
-            this.h,
-            this.durationToReachTarget,
-            this.ease
-          )
+        rect = new Rectangle(
+          this.ctx,
+          new Vector((i * innerWidth) / this.numOfSegments, -this.h),
+          targetPosition,
+          this.w,
+          this.h,
+          this.durationToReachTarget,
+          this.ease,
+          this.spriteSheet
         )
+
+        rect.setColor(this.color)
+        this.bars.push(rect)
       }, i * this.msPerSpawn)
     }
   }
@@ -55,7 +68,7 @@ export class BarsFromTopToBottom {
   draw() {
     this.bars.forEach(bar => {
       bar.draw()
-      if(bar.checkCollision(this.player)) this.player.takeDamage()
+      if (bar.checkCollision(this.player)) this.player.takeDamage()
     })
   }
 
@@ -65,6 +78,7 @@ export class BarsFromTopToBottom {
 }
 
 export class ReverseOfBarsFromTopToBottom extends BarsFromTopToBottom {
+  color = 'hsl(158.1, 64.4%, 51.6%'
   constructor(public ctx: CanvasRenderingContext2D, public player: Player) {
     super(ctx, player) // Llama al constructor de la clase base
     this.w = innerWidth / this.numOfSegments // Ancho de cada barra
@@ -81,20 +95,21 @@ export class ReverseOfBarsFromTopToBottom extends BarsFromTopToBottom {
       )
 
       setTimeout(() => {
-        this.bars.push(
-          new Rectangle(
-            this.ctx,
-            new Vector(
-              (i * innerWidth) / this.numOfSegments, // Posición inicial en el eje X
-              innerHeight + this.h // Comienza fuera del canvas por debajo
-            ),
-            targetPosition,
-            this.w,
-            this.h,
-            this.durationToReachTarget,
-            this.ease
-          )
+        const rect = new Rectangle(
+          this.ctx,
+          new Vector(
+            (i * innerWidth) / this.numOfSegments, // Posición inicial en el eje X
+            innerHeight + this.h // Comienza fuera del canvas por debajo
+          ),
+          targetPosition,
+          this.w,
+          this.h,
+          this.durationToReachTarget,
+          this.ease
         )
+
+        rect.setColor(this.color)
+        this.bars.push(rect)
       }, i * this.msPerSpawn)
     }
   }
@@ -103,12 +118,15 @@ export class ReverseOfBarsFromTopToBottom extends BarsFromTopToBottom {
 export class SquaresFromTopRightToBottomLeft extends BarsFromTopToBottom {
   constructor(public ctx: CanvasRenderingContext2D, public player: Player) {
     super(ctx, player) // Llama al constructor de la clase base
-    this.w = 25
-    this.h = 25
+    this.w = 32
+    this.h = 32
+
+    this.spriteSheet = new SpriteSheet(SquareBulletSheet2, this.w, this.h, 5)
   }
 
   attack() {
     this.ease = randomItem(easingList)
+    let rect: Rectangle
     for (let i = 0; i < this.numOfSegments; i++) {
       const targetPosition = new Vector(
         (i * innerWidth) / this.numOfSegments,
@@ -116,20 +134,21 @@ export class SquaresFromTopRightToBottomLeft extends BarsFromTopToBottom {
       )
 
       setTimeout(() => {
-        this.bars.push(
-          new Rectangle(
-            this.ctx,
-            new Vector(
-              innerWidth - (i * innerWidth) / this.numOfSegments,
-              -this.h
-            ), // Comienza desde la derecha
-            targetPosition,
-            this.w,
-            this.h,
-            this.durationToReachTarget,
-            this.ease
-          )
+        rect = new Rectangle(
+          this.ctx,
+          new Vector(
+            innerWidth - (i * innerWidth) / this.numOfSegments,
+            -this.h
+          ), // Comienza desde la derecha
+          targetPosition,
+          this.w,
+          this.h,
+          this.durationToReachTarget,
+          this.ease,
+          this.spriteSheet
         )
+
+        this.bars.push(rect)
       }, i * this.msPerSpawn)
     }
   }
@@ -138,8 +157,10 @@ export class SquaresFromTopRightToBottomLeft extends BarsFromTopToBottom {
 export class SquaresFromBottomLeftToTopRight extends BarsFromTopToBottom {
   constructor(public ctx: CanvasRenderingContext2D, public player: Player) {
     super(ctx, player) // Llama al constructor de la clase base
-    this.w = 25 // Ancho del cuadrado
-    this.h = 25 // Alto del cuadrado
+    this.w = 32 // Ancho del cuadrado
+    this.h = 32 // Alto del cuadrado
+
+    this.spriteSheet = new SpriteSheet(SquareBulletSheet, this.w, this.h, 5)
   }
 
   attack() {
@@ -162,7 +183,8 @@ export class SquaresFromBottomLeftToTopRight extends BarsFromTopToBottom {
             this.w,
             this.h,
             this.durationToReachTarget,
-            this.ease
+            this.ease,
+            this.spriteSheet
           )
         )
       }, i * this.msPerSpawn)
@@ -178,27 +200,31 @@ export class TwoBigBarsFromTopToBottom extends BarsFromTopToBottom {
     this.h = 100
     this.w = innerWidth / this.numOfSegments - this.gap
     this.durationToReachTarget = 2250
+    this.color =  "hsl(187.9, 85.7%, 53.3%)"
   }
 
   attack() {
     this.ease = randomItem(easingList)
+    let rect: Rectangle
     for (let i = 0; i < this.numOfSegments; i++) {
       const targetPosition = new Vector(
         (i * innerWidth) / this.numOfSegments,
         innerHeight + this.h
       )
       setTimeout(() => {
-        this.bars.push(
-          new Rectangle(
-            this.ctx,
-            new Vector((i * innerWidth) / this.numOfSegments, -this.h),
-            targetPosition,
-            this.w,
-            this.h,
-            this.durationToReachTarget,
-            this.ease
-          )
+        rect =  new Rectangle(
+          this.ctx,
+          new Vector((i * innerWidth) / this.numOfSegments, -this.h),
+          targetPosition,
+          this.w,
+          this.h,
+          this.durationToReachTarget,
+          this.ease
         )
+
+        rect.setColor(this.color)
+        this.bars.push(rect)
+        
       }, i * this.msPerSpawn)
     }
   }
@@ -211,10 +237,12 @@ export class BarsFromSide extends BarsFromTopToBottom {
     this.gap = 0.5
     this.h = innerHeight / this.numOfSegments - this.gap
     this.durationToReachTarget = 2250
+    this.color = "hsl(234.5, 89.5%, 73.9%)"
   }
 
   attack() {
     this.ease = randomItem(easingList)
+    let rect: Rectangle
     for (let i = 0; i < this.numOfSegments; i++) {
       const targetPosition = new Vector(
         innerWidth + this.w,
@@ -222,17 +250,19 @@ export class BarsFromSide extends BarsFromTopToBottom {
       )
 
       setTimeout(() => {
-        this.bars.push(
-          new Rectangle(
-            this.ctx,
-            new Vector(-this.w, (i * innerHeight) / this.numOfSegments),
-            targetPosition,
-            this.w,
-            this.h,
-            this.durationToReachTarget,
-            this.ease
-          )
+        rect = new Rectangle(
+          this.ctx,
+          new Vector(-this.w, (i * innerHeight) / this.numOfSegments),
+          targetPosition,
+          this.w,
+          this.h,
+          this.durationToReachTarget,
+          this.ease
         )
+
+        rect.setColor(this.color)
+        this.bars.push(rect)
+      
       }, i * this.msPerSpawn)
     }
   }
@@ -246,10 +276,12 @@ export class TwoBigBarsFromSide extends BarsFromSide {
     this.h = innerHeight / this.numOfSegments - this.gap
     this.w = 100
     this.durationToReachTarget = 2250
+    this.color = "hsl(82.7, 78%, 55.5%)"
   }
 
   attack() {
     this.ease = randomItem(easingList)
+    let rect: Rectangle
     for (let i = 0; i < this.numOfSegments; i++) {
       const targetPosition = new Vector(
         innerWidth + this.w,
@@ -257,16 +289,20 @@ export class TwoBigBarsFromSide extends BarsFromSide {
       )
 
       setTimeout(() => {
+        rect = new Rectangle(
+          this.ctx,
+          new Vector(-this.w, (i * innerHeight) / this.numOfSegments),
+          targetPosition,
+          this.w,
+          this.h,
+          this.durationToReachTarget,
+          this.ease
+        )
+
+        rect.setColor(this.color)
+
         this.bars.push(
-          new Rectangle(
-            this.ctx,
-            new Vector(-this.w, (i * innerHeight) / this.numOfSegments),
-            targetPosition,
-            this.w,
-            this.h,
-            this.durationToReachTarget,
-            this.ease
-          )
+          rect
         )
       }, i * this.msPerSpawn)
     }

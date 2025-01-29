@@ -1,3 +1,5 @@
+import { Vector } from "./vector";
+
 export class SpriteSheet {
     private image: HTMLImageElement;
     public frameWidth: number;
@@ -6,14 +8,17 @@ export class SpriteSheet {
     private currentFrame: number;
     private isLoaded: boolean;
     private frameCount: number; // Contador de fotogramas
-    private frameRate: number; // Número de frames antes de cambiar
+    // private frameRate: number; // Número de frames antes de cambiar
+
+    
 
     constructor(
         imageSrc: string,
         frameWidth: number,
         frameHeight: number,
         totalFrames: number,
-        frameRate: number = 12 // Cambiar cada 15 frames por defecto
+        private scale: Vector = new Vector(1, 1)
+        // frameRate: number = 12 // Cambiar cada 15 frames por defecto
     ) {
         this.image = new Image();
         this.image.src = imageSrc;
@@ -23,7 +28,7 @@ export class SpriteSheet {
         this.currentFrame = 0; // Fotograma actual
         this.isLoaded = false;
         this.frameCount = 0; // Inicializa el contador de fotogramas
-        this.frameRate = frameRate; // Establece la tasa de frames
+        // this.frameRate = frameRate; // Establece la tasa de frames
 
         // Evento para saber cuándo la imagen ha sido cargada
         this.image.onload = () => {
@@ -42,8 +47,8 @@ export class SpriteSheet {
                 this.frameHeight,
                 x, // X en el canvas
                 y, // Y en el canvas
-                this.frameWidth,
-                this.frameHeight
+                this.frameWidth * this.scale.x,
+                this.frameHeight * this.scale.y
             );
         }
     }
@@ -52,9 +57,8 @@ export class SpriteSheet {
     update(): void {
         if (!this.isLoaded) return; // Si no está cargado, no hacer nada
 
-        this.frameCount++; // Incrementar el contador de fotogramas
 
-        if (this.frameCount >= this.frameRate) { 
+        if (Math.floor(this.frameCount/ 5) % this.totalFrames == 0) { 
             // Verificar si hemos alcanzado la tasa de frames
             this.currentFrame++; // Cambiar al siguiente fotograma
 
@@ -62,7 +66,8 @@ export class SpriteSheet {
                 this.currentFrame = 0; // Reiniciar al primer fotograma si se alcanza el final
             }
 
-            this.frameCount = 0; // Reiniciar el contador de fotogramas
+           // this.frameCount = 0; // Reiniciar el contador de fotogramas
         }
+        this.frameCount++;
     }
 }

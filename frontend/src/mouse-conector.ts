@@ -4,6 +4,7 @@ import { Mouse } from './mouse'
 import { Vector } from './vector'
 
 export default class MouseConnector {
+  private lenght = 80
   constructor(private ctx: CanvasRenderingContext2D, private mouse: Mouse) {}
 
   connect(c: Circle) {
@@ -19,7 +20,7 @@ export default class MouseConnector {
 
     const force = Vector.fromPolar(magnitude, angle)
 
-    if (distance > 1) {
+    if (distance > this.lenght) {
       c.velocity = c.velocity.add(force).scale(METER_PER_SECOND)
     }
   }

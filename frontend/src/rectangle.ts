@@ -1,9 +1,12 @@
 import { Vector } from './vector'
 import { Circle } from './circle'
 import { EasingFunction } from './lib/utils'
+import { SpriteSheet } from './sprite-sheet'
 
 export class Rectangle {
   isCollidingWithTarget = false
+
+  private color = '#fff'
 
   private startPosition: Vector
   // public targetPosition: Vector
@@ -16,7 +19,8 @@ export class Rectangle {
     private width: number,
     private height: number,
     private duration: number, // Duración del movimiento
-    public easeFunc: EasingFunction
+    public easeFunc: EasingFunction,
+    public spriteSheet: SpriteSheet | undefined = undefined
   ) {
     this.startPosition = new Vector(position.x, position.y)
 
@@ -43,16 +47,27 @@ export class Rectangle {
       // Si ha llegado al final, ajusta la posición a la posición objetivo
       this.position = new Vector(this.targetPosition.x, this.targetPosition.y)
     }
+
+    if (this.spriteSheet) this.spriteSheet.update()
   }
 
   draw() {
-    this.ctx.save()
+    if (this.spriteSheet) {
+      this.spriteSheet.draw(this.ctx, this.position.x, this.position.y)
+    } else {
+      this.ctx.save()
 
-    this.ctx.fillStyle = this.isCollidingWithTarget ? 'red' : '#fff'
+      this.ctx.fillStyle = this.isCollidingWithTarget ? 'red' : this.color
 
-    this.ctx.fillRect(this.position.x, this.position.y, this.width, this.height)
+      this.ctx.fillRect(
+        this.position.x,
+        this.position.y,
+        this.width,
+        this.height
+      )
 
-    this.ctx.restore()
+      this.ctx.restore()
+    }
   }
 
   checkCollision(circle: Circle): boolean {
@@ -77,6 +92,10 @@ export class Rectangle {
     this.isCollidingWithTarget = distanceSquared < circle.radius * circle.radius
 
     return this.isCollidingWithTarget
+  }
+
+  setColor(color: string) {
+    this.color = color
   }
 
   area(): number {
